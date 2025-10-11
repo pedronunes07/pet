@@ -1,0 +1,8 @@
+<h2>Lista de Alunos</h2>
+<ul>
+    <li *ngFor="let aluno of alunos">
+        {{ aluno.nome }} - Nota: {{ aluno.nota }}
+        <span *ngIf="aluno.estaAprovado()"> Aprovado</span>
+        <span *ngIf="!aluno.estaAprovado()"> Reprovado</span>
+    </li>
+</ul>

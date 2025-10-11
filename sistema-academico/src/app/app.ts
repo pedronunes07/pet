@@ -1,12 +1,24 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
+import { AlunoForm } from './aluno/aluno-form/aluno-form';
+import { AlunoList } from './aluno/aluno-list/aluno-list';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, AlunoForm, AlunoList, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('sistema-academico');
+
+  constructor(private router: Router) { }
+
+  irParaLista() {
+    this.router.navigate(['/']);
+  }
+  
+  irParaNovo() {
+    this.router.navigate(['/novo']);
+  }
 }

@@ -1,0 +1,12 @@
+<h2>Cadastro de Aluno</h2>
+<form (ngSubmit)="adicionar()">
+    <label>
+        Nome:
+        <input [(ngModel)]="nome" name="nome" required />
+    </label>
+    <label>
+        Nota:
+        <input type="number" [(ngModel)]="nota" name="nota" required />
+    </label>
+    <button type="submit">Salvar</button>
+</form>
