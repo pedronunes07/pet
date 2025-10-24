@@ -19,9 +19,15 @@ export class AlunoForm {
 
   adicionar() {
     const novoAluno = new Aluno(this.nome, this.nota);
-    this.alunoService.adicionar(novoAluno);
-    this.nome = '';
-    this.nota = 0;
-    this.router.navigate(['/']);
+    this.alunoService.adicionar(novoAluno).subscribe({
+      next: (resposta) => {
+        this.router.navigate(['/']);
+        alert('Aluno salvo');
+      },
+      error: (erro) => {
+        console.error(erro);
+        alert('Erro ao salvar aluno');
+      }
+    });
   }
 }
