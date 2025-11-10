@@ -20,7 +20,7 @@ export class Pet {
         public vacinas?: Vacina[],
         public observacoes?: string,
         public observacoesMedicas?: string,
-        public id?: number // opcional para criação
+        public id?: number 
     ) { }
 
     ehAdulto(): boolean {

@@ -4,7 +4,7 @@ export class Dono {
         public email: string,
         public telefone: string,
         public cidade: string,
-        public id?: number, // opcional para criação
+        public id?: number, 
         public endereco?: string,
         public cep?: string,
         public estado?: string,
