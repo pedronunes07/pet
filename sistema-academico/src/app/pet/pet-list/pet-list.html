@@ -1,9 +1,0 @@
-<h2>Lista de Pets</h2>
-<ul>
-    <li *ngFor="let pet of pets">
-        {{ pet.nome }} - {{ pet.especie }} - Idade: {{ pet.idade }} anos
-        <span *ngIf="pet.ehAdulto()"> (Adulto)</span>
-        <span *ngIf="!pet.ehAdulto()"> (Filhote)</span>
-    </li>
-</ul>
-
