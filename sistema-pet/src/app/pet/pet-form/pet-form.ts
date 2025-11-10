@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -31,15 +31,20 @@ export class CadastrarPet implements OnInit {
     fotos: []
   });
   petId?: number;
+  private donoService = inject(DonoService);
+  private petService = inject(PetService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  donos = computed(() => this.donoService.getDonos()());
+  donos = computed(() => {
+    try {
+      return this.donoService.getDonos()();
+    } catch (error) {
+      return [];
+    }
+  });
 
-  constructor(
-    private petService: PetService,
-    private donoService: DonoService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -94,6 +99,25 @@ export class CadastrarPet implements OnInit {
       ...pet,
       vacinas: (pet.vacinas || []).filter((_, i) => i !== index)
     }));
+  }
+
+  atualizarVacina(index: number, campo: keyof Vacina, valor: string) {
+    this.pet.update(pet => {
+      const vacinas = [...(pet.vacinas || [])];
+      if (vacinas[index]) {
+        vacinas[index] = { ...vacinas[index], [campo]: valor };
+      }
+      return { ...pet, vacinas };
+    });
+  }
+
+  atualizarDonoId(valor: string) {
+    const donoId = valor ? +valor : undefined;
+    this.pet.update(pet => ({ ...pet, donoId }));
+  }
+
+  atualizarCampo(campo: string, valor: any) {
+    this.pet.update(pet => ({ ...pet, [campo]: valor }));
   }
 
   adicionarFoto() {

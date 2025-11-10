@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { PetService } from '../../service/pet-service';
 import { DonoService } from '../../service/dono-service';
 import { Pet } from '../../model/pet';
+import { Dono } from '../../model/dono';
+
+type PetComDono = Pet & { dono?: Dono };
 
 @Component({
   selector: 'app-dashboard',
@@ -13,14 +16,14 @@ import { Pet } from '../../model/pet';
   styleUrl: './dashboard.css'
 })
 export class Dashboard {
-  pets = computed(() => {
+  pets = computed<PetComDono[]>(() => {
     const pets = this.petService.getPets()();
     const donos = this.donoService.getDonos()();
     
     return pets.map(pet => ({
       ...pet,
       dono: donos.find(dono => dono.id === pet.donoId)
-    }));
+    } as PetComDono));
   });
   donos = computed(() => this.donoService.getDonos()());
 
@@ -38,15 +41,15 @@ export class Dashboard {
     this.router.navigate(['/cadastrar-dono']);
   }
 
-  verDetalhesPet(pet: Pet) {
+  verDetalhesPet(pet: PetComDono) {
     this.router.navigate(['/detalhes-pet', pet.id]);
   }
 
-  editarPet(pet: Pet) {
+  editarPet(pet: PetComDono) {
     this.router.navigate(['/editar-pet', pet.id]);
   }
 
-  excluirPet(pet: Pet) {
+  excluirPet(pet: PetComDono) {
     if (confirm(`Tem certeza que deseja excluir o pet ${pet.nome}?`)) {
       this.petService.excluirPet(pet.id!);
     }

@@ -6,7 +6,7 @@
     </nav>
   
     <div class="form-container">
-      <h1>🐾 Cadastrar Pet</h1>
+      <h1>🐾 {{ petId !== undefined ? 'Editar Pet' : 'Cadastrar Pet' }}</h1>
       
       <form (ngSubmit)="salvarPet()" class="pet-form">
         <div class="form-section">
@@ -18,7 +18,8 @@
                 <input 
                   type="text" 
                   id="nome" 
-                  [(ngModel)]="pet().nome" 
+                  [value]="pet().nome || ''"
+                  (input)="atualizarCampo('nome', $any($event.target).value)"
                   name="nome"
                   required
                 />
@@ -29,7 +30,8 @@
                 <input 
                   type="text" 
                   id="raca" 
-                  [(ngModel)]="pet().raca" 
+                  [value]="pet().raca || ''"
+                  (input)="atualizarCampo('raca', $any($event.target).value)"
                   name="raca"
                 />
               </div>
@@ -40,7 +42,8 @@
                   <input 
                     type="text" 
                     id="peso" 
-                    [(ngModel)]="pet().peso" 
+                    [value]="pet().peso || ''"
+                    (input)="atualizarCampo('peso', $any($event.target).value)"
                     name="peso"
                   />
                 </div>
@@ -49,7 +52,8 @@
                   <input 
                     type="text" 
                     id="cor" 
-                    [(ngModel)]="pet().cor" 
+                    [value]="pet().cor || ''"
+                    (input)="atualizarCampo('cor', $any($event.target).value)"
                     name="cor"
                   />
                 </div>
@@ -59,13 +63,16 @@
                 <label for="donoId">Dono</label>
                 <select 
                   id="donoId" 
-                  [(ngModel)]="pet().donoId" 
+                  [value]="pet().donoId || ''"
+                  (change)="atualizarDonoId($any($event.target).value)"
                   name="donoId"
                   required
                 >
                   <option value="">Selecione um dono</option>
                   @for (dono of donos(); track dono.id) {
                     <option [value]="dono.id">{{ dono.nomeCompleto }}</option>
+                  } @empty {
+                    <option value="">Nenhum dono cadastrado</option>
                   }
                 </select>
               </div>
@@ -77,7 +84,8 @@
                 <input 
                   type="text" 
                   id="especie" 
-                  [(ngModel)]="pet().especie" 
+                  [value]="pet().especie || ''"
+                  (input)="atualizarCampo('especie', $any($event.target).value)"
                   name="especie"
                   required
                 />
@@ -86,9 +94,10 @@
               <div class="form-group">
                 <label for="idade">Idade</label>
                 <input 
-                  type="text" 
+                  type="number" 
                   id="idade" 
-                  [(ngModel)]="pet().idade" 
+                  [value]="pet().idade || 0"
+                  (input)="atualizarCampo('idade', +$any($event.target).value)"
                   name="idade"
                 />
               </div>
@@ -98,7 +107,8 @@
                 <input 
                   type="text" 
                   id="sexo" 
-                  [(ngModel)]="pet().sexo" 
+                  [value]="pet().sexo || ''"
+                  (input)="atualizarCampo('sexo', $any($event.target).value)"
                   name="sexo"
                 />
               </div>
@@ -111,7 +121,8 @@
                       type="radio" 
                       name="vacinado" 
                       value="Sim" 
-                      [(ngModel)]="pet().vacinado"
+                      [checked]="pet().vacinado === 'Sim'"
+                      (change)="atualizarCampo('vacinado', 'Sim')"
                     />
                     Sim
                   </label>
@@ -120,7 +131,8 @@
                       type="radio" 
                       name="vacinado" 
                       value="Não" 
-                      [(ngModel)]="pet().vacinado"
+                      [checked]="pet().vacinado === 'Não'"
+                      (change)="atualizarCampo('vacinado', 'Não')"
                     />
                     Não
                   </label>
@@ -129,7 +141,8 @@
                       type="radio" 
                       name="vacinado" 
                       value="Parcialmente" 
-                      [(ngModel)]="pet().vacinado"
+                      [checked]="pet().vacinado === 'Parcialmente'"
+                      (change)="atualizarCampo('vacinado', 'Parcialmente')"
                     />
                     Parcialmente
                   </label>
@@ -142,7 +155,7 @@
         <div class="form-section">
           <h2>💉 Vacinas</h2>
           <div class="vaccines-container">
-            @for (vacina of pet().vacinas; track $index; let i = $index) {
+            @for (vacina of pet().vacinas || []; track $index; let i = $index) {
               <div class="vaccine-item">
                 <div class="form-row">
                   <div class="form-column">
@@ -150,7 +163,8 @@
                       <label>Nome da Vacina</label>
                       <input 
                         type="text" 
-                        [(ngModel)]="pet().vacinas[i].nomeVacina" 
+                        [value]="pet().vacinas?.[i]?.nomeVacina || ''"
+                        (input)="atualizarVacina(i, 'nomeVacina', $any($event.target).value)"
                         name="nomeVacina{{i}}"
                       />
                     </div>
@@ -158,7 +172,8 @@
                       <label>Próxima Dose</label>
                       <input 
                         type="date" 
-                        [(ngModel)]="pet().vacinas[i].proximaDose" 
+                        [value]="pet().vacinas?.[i]?.proximaDose || ''"
+                        (input)="atualizarVacina(i, 'proximaDose', $any($event.target).value)"
                         name="proximaDose{{i}}"
                       />
                     </div>
@@ -168,7 +183,8 @@
                       <label>Data da Aplicação</label>
                       <input 
                         type="date" 
-                        [(ngModel)]="pet().vacinas[i].dataAplicacao" 
+                        [value]="pet().vacinas?.[i]?.dataAplicacao || ''"
+                        (input)="atualizarVacina(i, 'dataAplicacao', $any($event.target).value)"
                         name="dataAplicacao{{i}}"
                       />
                     </div>
@@ -176,7 +192,8 @@
                       <label>Nome do Veterinário</label>
                       <input 
                         type="text" 
-                        [(ngModel)]="pet().vacinas[i].nomeVeterinario" 
+                        [value]="pet().vacinas?.[i]?.nomeVeterinario || ''"
+                        (input)="atualizarVacina(i, 'nomeVeterinario', $any($event.target).value)"
                         name="nomeVeterinario{{i}}"
                       />
                     </div>
@@ -204,7 +221,8 @@
             <label for="observacoes">Observações</label>
             <textarea 
               id="observacoes" 
-              [(ngModel)]="pet().observacoes" 
+              [value]="pet().observacoes || ''"
+              (input)="atualizarCampo('observacoes', $any($event.target).value)"
               name="observacoes"
               rows="4"
               placeholder="Observações gerais sobre o pet..."
@@ -215,7 +233,8 @@
             <label for="observacoesMedicas">Observações Médicas</label>
             <textarea 
               id="observacoesMedicas" 
-              [(ngModel)]="pet().observacoesMedicas" 
+              [value]="pet().observacoesMedicas || ''"
+              (input)="atualizarCampo('observacoesMedicas', $any($event.target).value)"
               name="observacoesMedicas"
               rows="4"
               placeholder="Observações médicas importantes..."
@@ -224,7 +243,7 @@
         </div>
   
         <div class="form-actions">
-          <button type="submit" class="submit-button">Cadastrar Pet</button>
+          <button type="submit" class="submit-button">{{ petId !== undefined ? 'Atualizar Pet' : 'Cadastrar Pet' }}</button>
         </div>
       </form>
     </div>
