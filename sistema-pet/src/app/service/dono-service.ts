@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 })
 export class DonoService {
   private http = inject(HttpClient);
-  private readonly API = "https://localhost:7240/api/dono";
+  private readonly API = "http://localhost:5281/api/dono";
   private donosSignal = signal<Dono[]>([]);
 
   constructor() {
@@ -22,10 +22,9 @@ export class DonoService {
 
   private carregarDonos() {
     this.http.get<Dono[]>(this.API).subscribe({
-      next: (donos) => this.donosSignal.set(donos),
-      error: (erro) => {
+      next: (donos: Dono[]) => this.donosSignal.set(donos),
+      error: (erro: any) => {
         console.error('Erro ao carregar donos:', erro);
-        // Em caso de erro, mantém array vazio
         this.donosSignal.set([]);
       }
     });
@@ -33,15 +32,14 @@ export class DonoService {
 
   listar(): Observable<Dono[]> {
     return this.http.get<Dono[]>(this.API).pipe(
-      tap(donos => this.donosSignal.set(donos))
+      tap((donos: Dono[]) => this.donosSignal.set(donos))
     );
   }
 
   adicionar(dono: Dono | Omit<Dono, 'id'>): Observable<Dono> {
-    // Remove o id se estiver presente para criação
     const { id, ...donoSemId } = dono as Dono;
     return this.http.post<Dono>(this.API, donoSemId).pipe(
-      tap(novoDono => {
+      tap((novoDono: Dono) => {
         const donosAtuais = this.donosSignal();
         this.donosSignal.set([...donosAtuais, novoDono]);
       })
@@ -50,9 +48,9 @@ export class DonoService {
 
   atualizar(dono: Dono): Observable<Dono> {
     return this.http.put<Dono>(`${this.API}/${dono.id}`, dono).pipe(
-      tap(donoAtualizado => {
+      tap((donoAtualizado: Dono) => {
         const donosAtuais = this.donosSignal();
-        const index = donosAtuais.findIndex(d => d.id === dono.id);
+        const index = donosAtuais.findIndex((d: Dono) => d.id === dono.id);
         if (index !== -1) {
           donosAtuais[index] = donoAtualizado;
           this.donosSignal.set([...donosAtuais]);
@@ -65,17 +63,22 @@ export class DonoService {
     this.http.delete(`${this.API}/${id}`).subscribe({
       next: () => {
         const donosAtuais = this.donosSignal();
-        this.donosSignal.set(donosAtuais.filter(d => d.id !== id));
+        this.donosSignal.set(donosAtuais.filter((d: Dono) => d.id !== id));
+        this.listar().subscribe();
       },
-      error: (erro) => {
+      error: (erro: any) => {
         console.error('Erro ao excluir dono:', erro);
         alert('Erro ao excluir dono');
       }
     });
   }
 
+  obterPorId(id: number): Observable<Dono> {
+    return this.http.get<Dono>(`${this.API}/${id}`);
+  }
+
   getDonoById(id: number): Dono | undefined {
-    return this.donosSignal().find(d => d.id === id);
+    return this.donosSignal().find((d: Dono) => d.id === id);
   }
 }
 

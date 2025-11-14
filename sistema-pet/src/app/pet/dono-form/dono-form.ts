@@ -42,21 +42,26 @@ export class DonoForm implements OnInit {
   }
 
   carregarDono(id: number): void {
-    const dono = this.donoService.getDonoById(id);
-    if (dono) {
-      this.dono.set({
-        nomeCompleto: dono.nomeCompleto,
-        email: dono.email,
-        telefone: dono.telefone,
-        cidade: dono.cidade,
-        endereco: dono.endereco || '',
-        cep: dono.cep || '',
-        estado: dono.estado || '',
-        contatoEmergencia: dono.contatoEmergencia || '',
-        telefoneEmergencia: dono.telefoneEmergencia || '',
-        observacao: dono.observacao || ''
-      });
-    }
+    this.donoService.obterPorId(id).subscribe({
+      next: (dono) => {
+        this.dono.set({
+          nomeCompleto: dono.nomeCompleto,
+          email: dono.email,
+          telefone: dono.telefone,
+          cidade: dono.cidade,
+          endereco: dono.endereco || '',
+          cep: dono.cep || '',
+          estado: dono.estado || '',
+          contatoEmergencia: dono.contatoEmergencia || '',
+          telefoneEmergencia: dono.telefoneEmergencia || '',
+          observacao: dono.observacao || ''
+        });
+      },
+      error: (erro) => {
+        console.error(erro);
+        alert('Erro ao carregar dono');
+      }
+    });
   }
 
   salvarDono() {

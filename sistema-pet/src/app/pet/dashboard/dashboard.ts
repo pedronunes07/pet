@@ -20,9 +20,9 @@ export class Dashboard {
     const pets = this.petService.getPets()();
     const donos = this.donoService.getDonos()();
     
-    return pets.map(pet => ({
+    return pets.map((pet: Pet) => ({
       ...pet,
-      dono: donos.find(dono => dono.id === pet.donoId)
+      dono: donos.find((dono: Dono) => dono.id === pet.donoId)
     } as PetComDono));
   });
   donos = computed(() => this.donoService.getDonos()());
@@ -62,16 +62,8 @@ export class Dashboard {
   excluirDono(donoId: number) {
     const dono = this.donoService.getDonoById(donoId);
     if (dono && confirm(`Tem certeza que deseja excluir o dono ${dono.nomeCompleto}? Isso também excluirá todos os pets associados.`)) {
-      // Primeiro excluir todos os pets do dono
-      const petsDoDono = this.pets().filter(pet => pet.donoId === donoId);
-      petsDoDono.forEach(pet => {
-        if (pet.id) {
-          this.petService.excluirPet(pet.id);
-        }
-      });
-      
-      // Depois excluir o dono
       this.donoService.excluirDono(donoId);
+      this.petService.listar().subscribe();
     }
   }
 }

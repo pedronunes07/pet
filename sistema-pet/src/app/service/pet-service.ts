@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 })
 export class PetService {
   private http = inject(HttpClient);
-  private readonly API = "https://localhost:7240/api/pet";
+  private readonly API = "http://localhost:5281/api/pet";
   private petsSignal = signal<Pet[]>([]);
 
   constructor() {
@@ -22,10 +22,9 @@ export class PetService {
 
   private carregarPets() {
     this.http.get<Pet[]>(this.API).subscribe({
-      next: (pets) => this.petsSignal.set(pets),
-      error: (erro) => {
+      next: (pets: Pet[]) => this.petsSignal.set(pets),
+      error: (erro: any) => {
         console.error('Erro ao carregar pets:', erro);
-        // Em caso de erro, mantém array vazio
         this.petsSignal.set([]);
       }
     });
@@ -33,13 +32,13 @@ export class PetService {
 
   listar(): Observable<Pet[]> {
     return this.http.get<Pet[]>(this.API).pipe(
-      tap(pets => this.petsSignal.set(pets))
+      tap((pets: Pet[]) => this.petsSignal.set(pets))
     );
   }
 
   adicionar(pet: Omit<Pet, 'id'>): Observable<Pet> {
     return this.http.post<Pet>(this.API, pet).pipe(
-      tap(novoPet => {
+      tap((novoPet: Pet) => {
         const petsAtuais = this.petsSignal();
         this.petsSignal.set([...petsAtuais, novoPet]);
       })
@@ -48,9 +47,9 @@ export class PetService {
 
   atualizar(pet: Pet): Observable<Pet> {
     return this.http.put<Pet>(`${this.API}/${pet.id}`, pet).pipe(
-      tap(petAtualizado => {
+      tap((petAtualizado: Pet) => {
         const petsAtuais = this.petsSignal();
-        const index = petsAtuais.findIndex(p => p.id === pet.id);
+        const index = petsAtuais.findIndex((p: Pet) => p.id === pet.id);
         if (index !== -1) {
           petsAtuais[index] = petAtualizado;
           this.petsSignal.set([...petsAtuais]);
@@ -63,9 +62,10 @@ export class PetService {
     this.http.delete(`${this.API}/${id}`).subscribe({
       next: () => {
         const petsAtuais = this.petsSignal();
-        this.petsSignal.set(petsAtuais.filter(p => p.id !== id));
+        this.petsSignal.set(petsAtuais.filter((p: Pet) => p.id !== id));
+        this.listar().subscribe();
       },
-      error: (erro) => {
+      error: (erro: any) => {
         console.error('Erro ao excluir pet:', erro);
         alert('Erro ao excluir pet');
       }

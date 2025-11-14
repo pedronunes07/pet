@@ -121,7 +121,6 @@ export class CadastrarPet implements OnInit {
   }
 
   adicionarFoto() {
-    // Simulação de upload de foto
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
