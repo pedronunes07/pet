@@ -48,7 +48,7 @@ export class DonoService {
     
     // Cria objeto limpo
     const donoLimpo: any = {};
-    const camposObrigatorios = ['nomeCompleto', 'email', 'telefone', 'cidade'];
+    const camposObrigatorios = ['nomeCompleto', 'email', 'telefone'];
     
     for (const key in donoSemId) {
       if (donoSemId.hasOwnProperty(key)) {
@@ -94,6 +94,22 @@ export class DonoService {
           console.error('URL:', erro?.url);
           if (erro?.error) {
             console.error('Resposta do servidor:', JSON.stringify(erro.error, null, 2));
+            // Extrai mensagens de validação do ModelState (ASP.NET Core)
+            if (erro.error.errors) {
+              const validationErrors: string[] = [];
+              for (const key in erro.error.errors) {
+                if (erro.error.errors[key]) {
+                  validationErrors.push(`${key}: ${erro.error.errors[key].join(', ')}`);
+                }
+              }
+              if (validationErrors.length > 0) {
+                console.error('Erros de validação:', validationErrors);
+              }
+            }
+          }
+          // Verifica se é erro de conexão
+          if (erro.status === 0 || erro.status === undefined) {
+            console.error('❌ Erro de conexão: Verifique se a API está rodando em', this.API);
           }
         }
       })

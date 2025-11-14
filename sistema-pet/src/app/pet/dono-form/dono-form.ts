@@ -76,29 +76,64 @@ export class DonoForm implements OnInit {
 
   private validarFormulario(): boolean {
     const dono = this.dono();
-    if (!dono.nomeCompleto || !dono.email || !dono.telefone) {
-      alert('Por favor, preencha os campos obrigatórios (Nome Completo, Email, Telefone)');
+    const erros: string[] = [];
+    
+    if (!dono.nomeCompleto || dono.nomeCompleto.trim() === '') {
+      erros.push('Nome Completo é obrigatório');
+    }
+    if (!dono.email || dono.email.trim() === '') {
+      erros.push('Email é obrigatório');
+    } else if (!this.validarEmail(dono.email)) {
+      erros.push('Email inválido');
+    }
+    if (!dono.telefone || dono.telefone.trim() === '') {
+      erros.push('Telefone é obrigatório');
+    }
+    
+    if (erros.length > 0) {
+      alert('Por favor, corrija os seguintes erros:\n\n' + erros.join('\n'));
       return false;
     }
     return true;
+  }
+  
+  private validarEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 
   adicionar() {
     const donoData = this.dono();
     // Cria um objeto simples sem o id para enviar ao backend
     // O serviço vai remover campos undefined/vazios automaticamente
-    const novoDono: Omit<Dono, 'id'> = {
-      nomeCompleto: donoData.nomeCompleto!,
-      email: donoData.email!,
-      telefone: donoData.telefone!,
-      cidade: donoData.cidade || '',
-      endereco: donoData.endereco || undefined,
-      cep: donoData.cep || undefined,
-      estado: donoData.estado || undefined,
-      contatoEmergencia: donoData.contatoEmergencia || undefined,
-      telefoneEmergencia: donoData.telefoneEmergencia || undefined,
-      observacao: donoData.observacao || undefined
+    const novoDono: any = {
+      nomeCompleto: donoData.nomeCompleto!.trim(),
+      email: donoData.email!.trim(),
+      telefone: donoData.telefone!.trim()
     };
+    
+    // Adiciona campos opcionais apenas se tiverem valor
+    if (donoData.cidade && donoData.cidade.trim()) {
+      novoDono.cidade = donoData.cidade.trim();
+    }
+    if (donoData.endereco && donoData.endereco.trim()) {
+      novoDono.endereco = donoData.endereco.trim();
+    }
+    if (donoData.cep && donoData.cep.trim()) {
+      novoDono.cep = donoData.cep.trim();
+    }
+    if (donoData.estado && donoData.estado.trim()) {
+      novoDono.estado = donoData.estado.trim();
+    }
+    if (donoData.contatoEmergencia && donoData.contatoEmergencia.trim()) {
+      novoDono.contatoEmergencia = donoData.contatoEmergencia.trim();
+    }
+    if (donoData.telefoneEmergencia && donoData.telefoneEmergencia.trim()) {
+      novoDono.telefoneEmergencia = donoData.telefoneEmergencia.trim();
+    }
+    if (donoData.observacao && donoData.observacao.trim()) {
+      novoDono.observacao = donoData.observacao.trim();
+    }
     
     console.log('Dados do formulário antes de enviar:', novoDono);
     
@@ -110,8 +145,29 @@ export class DonoForm implements OnInit {
       error: (erro) => {
         console.error('Erro completo no componente:', erro);
         let mensagem = 'Erro ao salvar dono';
-        if (erro?.error) {
-          if (typeof erro.error === 'string') {
+        
+        // Verifica se é erro de conexão
+        if (erro.status === 0 || erro.status === undefined) {
+          mensagem = 'Não foi possível conectar à API. Verifique se a API está rodando em http://localhost:5281';
+        } else if (erro?.error) {
+          // Extrai mensagens de validação do ModelState (ASP.NET Core)
+          if (erro.error.errors) {
+            const validationErrors: string[] = [];
+            for (const key in erro.error.errors) {
+              if (erro.error.errors[key]) {
+                validationErrors.push(`${key}: ${erro.error.errors[key].join(', ')}`);
+              }
+            }
+            if (validationErrors.length > 0) {
+              mensagem = 'Erros de validação:\n' + validationErrors.join('\n');
+            } else if (typeof erro.error === 'string') {
+              mensagem = erro.error;
+            } else if (erro.error.message) {
+              mensagem = erro.error.message;
+            } else if (erro.error.title) {
+              mensagem = erro.error.title;
+            }
+          } else if (typeof erro.error === 'string') {
             mensagem = erro.error;
           } else if (erro.error.message) {
             mensagem = erro.error.message;
@@ -121,6 +177,7 @@ export class DonoForm implements OnInit {
         } else if (erro?.message) {
           mensagem = erro.message;
         }
+        
         alert(`Erro ao salvar dono: ${mensagem}\n\nVerifique o console para mais detalhes.`);
       }
     });
@@ -149,8 +206,41 @@ export class DonoForm implements OnInit {
       },
       error: (erro) => {
         console.error('Erro completo:', erro);
-        const mensagem = erro?.error?.message || erro?.message || 'Erro ao atualizar dono';
-        alert(`Erro ao atualizar dono: ${mensagem}`);
+        let mensagem = 'Erro ao atualizar dono';
+        
+        // Verifica se é erro de conexão
+        if (erro.status === 0 || erro.status === undefined) {
+          mensagem = 'Não foi possível conectar à API. Verifique se a API está rodando em http://localhost:5281';
+        } else if (erro?.error) {
+          // Extrai mensagens de validação do ModelState (ASP.NET Core)
+          if (erro.error.errors) {
+            const validationErrors: string[] = [];
+            for (const key in erro.error.errors) {
+              if (erro.error.errors[key]) {
+                validationErrors.push(`${key}: ${erro.error.errors[key].join(', ')}`);
+              }
+            }
+            if (validationErrors.length > 0) {
+              mensagem = 'Erros de validação:\n' + validationErrors.join('\n');
+            } else if (typeof erro.error === 'string') {
+              mensagem = erro.error;
+            } else if (erro.error.message) {
+              mensagem = erro.error.message;
+            } else if (erro.error.title) {
+              mensagem = erro.error.title;
+            }
+          } else if (typeof erro.error === 'string') {
+            mensagem = erro.error;
+          } else if (erro.error.message) {
+            mensagem = erro.error.message;
+          } else if (erro.error.title) {
+            mensagem = erro.error.title;
+          }
+        } else if (erro?.message) {
+          mensagem = erro.message;
+        }
+        
+        alert(`Erro ao atualizar dono: ${mensagem}\n\nVerifique o console para mais detalhes.`);
       }
     });
   }
