@@ -63,7 +63,6 @@ export class PetService {
       next: () => {
         const petsAtuais = this.petsSignal();
         this.petsSignal.set(petsAtuais.filter((p: Pet) => p.id !== id));
-        this.listar().subscribe();
       },
       error: (erro: any) => {
         console.error('Erro ao excluir pet:', erro);

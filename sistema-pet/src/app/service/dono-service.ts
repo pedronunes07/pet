@@ -37,7 +37,8 @@ export class DonoService {
   }
 
   adicionar(dono: Dono | Omit<Dono, 'id'>): Observable<Dono> {
-    const { id, ...donoSemId } = dono as Dono;
+    // Remove o id se existir, mantendo todos os outros campos
+    const donoSemId = 'id' in dono ? (({ id, ...rest }) => rest)(dono) : dono;
     return this.http.post<Dono>(this.API, donoSemId).pipe(
       tap((novoDono: Dono) => {
         const donosAtuais = this.donosSignal();
@@ -64,7 +65,6 @@ export class DonoService {
       next: () => {
         const donosAtuais = this.donosSignal();
         this.donosSignal.set(donosAtuais.filter((d: Dono) => d.id !== id));
-        this.listar().subscribe();
       },
       error: (erro: any) => {
         console.error('Erro ao excluir dono:', erro);
