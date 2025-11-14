@@ -42,41 +42,57 @@ export class DonoService {
   }
 
   adicionar(dono: Dono | Omit<Dono, 'id'>): Observable<Dono> {
-    // Remove o id se existir, mantendo todos os outros campos
+    // Remove o id se existir
     let donoSemId = 'id' in dono ? (({ id, ...rest }) => rest)(dono) : dono;
     
-    // Remove campos undefined/null, mas mantém strings vazias para campos obrigatórios
+    // Cria objeto limpo
     const donoLimpo: any = {};
-    Object.entries(donoSemId).forEach(([key, value]) => {
-      // Mantém campos obrigatórios mesmo se vazios
-      if (['nomeCompleto', 'email', 'telefone', 'cidade'].includes(key)) {
-        donoLimpo[key] = value || '';
-      } 
-      // Remove apenas campos opcionais que estão undefined/null/vazios
-      else if (value !== undefined && value !== null && value !== '') {
+    const camposObrigatorios = ['nomeCompleto', 'email', 'telefone', 'cidade'];
+    
+    for (const key in donoSemId) {
+      if (donoSemId.hasOwnProperty(key)) {
+        const value = (donoSemId as any)[key];
+        
+        // Ignora undefined e null
+        if (value === undefined || value === null) {
+          continue;
+        }
+        
+        // Mantém campos obrigatórios mesmo se vazios
+        if (camposObrigatorios.includes(key)) {
+          donoLimpo[key] = value || '';
+          continue;
+        }
+        
+        // Para campos opcionais, remove strings vazias
+        if (typeof value === 'string' && value === '') {
+          continue;
+        }
+        
+        // Inclui o valor
         donoLimpo[key] = value;
       }
-    });
+    }
     
-    console.log('Enviando dono para API:', JSON.stringify(donoLimpo, null, 2));
+    console.log('=== ENVIANDO DONO PARA API ===');
+    console.log('URL:', this.API);
+    console.log('Dados:', JSON.stringify(donoLimpo, null, 2));
     
     return this.http.post<Dono>(this.API, donoLimpo).pipe(
       tap({
         next: (novoDono: Dono) => {
-          console.log('Dono salvo com sucesso:', novoDono);
+          console.log('✅ Dono salvo com sucesso:', novoDono);
           const donosAtuais = this.donosSignal();
           this.donosSignal.set([...donosAtuais, novoDono]);
         },
         error: (erro: any) => {
-          console.error('Erro ao adicionar dono:', erro);
-          if (erro?.status) {
-            console.error('Status:', erro.status);
-          }
-          if (erro?.message) {
-            console.error('Mensagem:', erro.message);
-          }
+          console.error('❌ ERRO AO ADICIONAR DONO');
+          console.error('Erro completo:', erro);
+          console.error('Status HTTP:', erro?.status);
+          console.error('Status Text:', erro?.statusText);
+          console.error('URL:', erro?.url);
           if (erro?.error) {
-            console.error('Erro do servidor:', erro.error);
+            console.error('Resposta do servidor:', JSON.stringify(erro.error, null, 2));
           }
         }
       })

@@ -42,53 +42,59 @@ export class PetService {
   }
 
   adicionar(pet: Omit<Pet, 'id'>): Observable<Pet> {
-    // Limpa os dados antes de enviar
+    // Cria objeto limpo removendo undefined e null
     const petLimpo: any = {};
     
-    Object.keys(pet).forEach(key => {
-      const value = (pet as any)[key];
-      
-      // Campos obrigatórios sempre são incluídos
-      if (['nome', 'especie', 'raca', 'idade', 'donoId'].includes(key)) {
-        petLimpo[key] = value;
-        return;
-      }
-      
-      // Arrays vazios podem ser enviados (backend pode esperar)
-      if (Array.isArray(value)) {
-        petLimpo[key] = value;
-        return;
-      }
-      
-      // Remove apenas campos opcionais que estão undefined/null
-      // Strings vazias em campos opcionais são removidas
-      if (value !== undefined && value !== null) {
-        if (typeof value === 'string' && value === '') {
-          return; // Não inclui strings vazias em campos opcionais
+    // Processa cada campo do pet
+    for (const key in pet) {
+      if (pet.hasOwnProperty(key)) {
+        const value = (pet as any)[key];
+        
+        // Ignora undefined e null
+        if (value === undefined || value === null) {
+          continue;
         }
+        
+        // Para arrays, envia mesmo se vazio (backend pode esperar)
+        if (Array.isArray(value)) {
+          petLimpo[key] = value;
+          continue;
+        }
+        
+        // Para strings vazias em campos opcionais, não envia
+        // Mas mantém campos obrigatórios mesmo vazios
+        if (typeof value === 'string' && value === '') {
+          const camposObrigatorios = ['nome', 'especie', 'raca'];
+          if (camposObrigatorios.includes(key)) {
+            petLimpo[key] = value;
+          }
+          continue;
+        }
+        
+        // Inclui o valor
         petLimpo[key] = value;
       }
-    });
+    }
     
-    console.log('Enviando pet para API:', JSON.stringify(petLimpo, null, 2));
+    console.log('=== ENVIANDO PET PARA API ===');
+    console.log('URL:', this.API);
+    console.log('Dados:', JSON.stringify(petLimpo, null, 2));
     
     return this.http.post<Pet>(this.API, petLimpo).pipe(
       tap({
         next: (novoPet: Pet) => {
-          console.log('Pet salvo com sucesso:', novoPet);
+          console.log('✅ Pet salvo com sucesso:', novoPet);
           const petsAtuais = this.petsSignal();
           this.petsSignal.set([...petsAtuais, novoPet]);
         },
         error: (erro: any) => {
-          console.error('Erro ao adicionar pet:', erro);
-          if (erro?.status) {
-            console.error('Status:', erro.status);
-          }
-          if (erro?.message) {
-            console.error('Mensagem:', erro.message);
-          }
+          console.error('❌ ERRO AO ADICIONAR PET');
+          console.error('Erro completo:', erro);
+          console.error('Status HTTP:', erro?.status);
+          console.error('Status Text:', erro?.statusText);
+          console.error('URL:', erro?.url);
           if (erro?.error) {
-            console.error('Erro do servidor:', erro.error);
+            console.error('Resposta do servidor:', JSON.stringify(erro.error, null, 2));
           }
         }
       })
