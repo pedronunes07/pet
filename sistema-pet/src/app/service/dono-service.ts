@@ -13,7 +13,12 @@ export class DonoService {
   private donosSignal = signal<Dono[]>([]);
 
   constructor() {
-    this.carregarDonos();
+    // Carrega donos apenas se a API estiver disponível
+    try {
+      this.carregarDonos();
+    } catch (error) {
+      console.warn('Erro ao inicializar carregamento de donos:', error);
+    }
   }
 
   getDonos() {
@@ -38,11 +43,42 @@ export class DonoService {
 
   adicionar(dono: Dono | Omit<Dono, 'id'>): Observable<Dono> {
     // Remove o id se existir, mantendo todos os outros campos
-    const donoSemId = 'id' in dono ? (({ id, ...rest }) => rest)(dono) : dono;
-    return this.http.post<Dono>(this.API, donoSemId).pipe(
-      tap((novoDono: Dono) => {
-        const donosAtuais = this.donosSignal();
-        this.donosSignal.set([...donosAtuais, novoDono]);
+    let donoSemId = 'id' in dono ? (({ id, ...rest }) => rest)(dono) : dono;
+    
+    // Remove campos undefined/null, mas mantém strings vazias para campos obrigatórios
+    const donoLimpo: any = {};
+    Object.entries(donoSemId).forEach(([key, value]) => {
+      // Mantém campos obrigatórios mesmo se vazios
+      if (['nomeCompleto', 'email', 'telefone', 'cidade'].includes(key)) {
+        donoLimpo[key] = value || '';
+      } 
+      // Remove apenas campos opcionais que estão undefined/null/vazios
+      else if (value !== undefined && value !== null && value !== '') {
+        donoLimpo[key] = value;
+      }
+    });
+    
+    console.log('Enviando dono para API:', JSON.stringify(donoLimpo, null, 2));
+    
+    return this.http.post<Dono>(this.API, donoLimpo).pipe(
+      tap({
+        next: (novoDono: Dono) => {
+          console.log('Dono salvo com sucesso:', novoDono);
+          const donosAtuais = this.donosSignal();
+          this.donosSignal.set([...donosAtuais, novoDono]);
+        },
+        error: (erro: any) => {
+          console.error('Erro ao adicionar dono:', erro);
+          if (erro?.status) {
+            console.error('Status:', erro.status);
+          }
+          if (erro?.message) {
+            console.error('Mensagem:', erro.message);
+          }
+          if (erro?.error) {
+            console.error('Erro do servidor:', erro.error);
+          }
+        }
       })
     );
   }

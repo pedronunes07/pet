@@ -154,7 +154,8 @@ export class CadastrarPet implements OnInit {
   adicionarPet() {
     const petData = this.pet();
     // Remove campos undefined e cria objeto limpo para enviar
-    const novoPet: Omit<Pet, 'id'> = {
+    // Usa 'as' para type assertion pois o método ehAdulto() não é necessário no objeto JSON
+    const novoPet = {
       nome: petData.nome!,
       especie: petData.especie!,
       raca: petData.raca || '',
@@ -168,16 +169,30 @@ export class CadastrarPet implements OnInit {
       observacoes: petData.observacoes,
       observacoesMedicas: petData.observacoesMedicas,
       fotos: petData.fotos
-    };
+    } as Omit<Pet, 'id'>;
+    
+    console.log('Dados do formulário antes de enviar:', novoPet);
+    
     this.petService.adicionar(novoPet).subscribe({
       next: (resposta) => {
         alert('Pet cadastrado com sucesso!');
         this.router.navigate(['/']);
       },
       error: (erro) => {
-        console.error('Erro completo:', erro);
-        const mensagem = erro?.error?.message || erro?.message || 'Erro ao salvar pet';
-        alert(`Erro ao salvar pet: ${mensagem}`);
+        console.error('Erro completo no componente:', erro);
+        let mensagem = 'Erro ao salvar pet';
+        if (erro?.error) {
+          if (typeof erro.error === 'string') {
+            mensagem = erro.error;
+          } else if (erro.error.message) {
+            mensagem = erro.error.message;
+          } else if (erro.error.title) {
+            mensagem = erro.error.title;
+          }
+        } else if (erro?.message) {
+          mensagem = erro.message;
+        }
+        alert(`Erro ao salvar pet: ${mensagem}\n\nVerifique o console para mais detalhes.`);
       }
     });
   }
@@ -185,7 +200,8 @@ export class CadastrarPet implements OnInit {
   atualizarPet() {
     const petData = this.pet();
     // Cria objeto limpo com todos os campos necessários
-    const petAtualizado: Pet = {
+    // Usa 'as' para type assertion pois o método ehAdulto() não é necessário no objeto JSON
+    const petAtualizado = {
       id: this.petId!,
       nome: petData.nome!,
       especie: petData.especie!,
@@ -200,7 +216,7 @@ export class CadastrarPet implements OnInit {
       observacoes: petData.observacoes,
       observacoesMedicas: petData.observacoesMedicas,
       fotos: petData.fotos
-    };
+    } as Pet;
     
     this.petService.atualizar(petAtualizado).subscribe({
       next: (resposta) => {

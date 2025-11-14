@@ -86,27 +86,42 @@ export class DonoForm implements OnInit {
   adicionar() {
     const donoData = this.dono();
     // Cria um objeto simples sem o id para enviar ao backend
+    // O serviço vai remover campos undefined/vazios automaticamente
     const novoDono: Omit<Dono, 'id'> = {
       nomeCompleto: donoData.nomeCompleto!,
       email: donoData.email!,
       telefone: donoData.telefone!,
       cidade: donoData.cidade || '',
-      endereco: donoData.endereco,
-      cep: donoData.cep,
-      estado: donoData.estado,
-      contatoEmergencia: donoData.contatoEmergencia,
-      telefoneEmergencia: donoData.telefoneEmergencia,
-      observacao: donoData.observacao
+      endereco: donoData.endereco || undefined,
+      cep: donoData.cep || undefined,
+      estado: donoData.estado || undefined,
+      contatoEmergencia: donoData.contatoEmergencia || undefined,
+      telefoneEmergencia: donoData.telefoneEmergencia || undefined,
+      observacao: donoData.observacao || undefined
     };
+    
+    console.log('Dados do formulário antes de enviar:', novoDono);
+    
     this.donoService.adicionar(novoDono).subscribe({
       next: (resposta) => {
         alert('Dono salvo com sucesso!');
         this.router.navigate(['/']);
       },
       error: (erro) => {
-        console.error('Erro completo:', erro);
-        const mensagem = erro?.error?.message || erro?.message || 'Erro ao salvar dono';
-        alert(`Erro ao salvar dono: ${mensagem}`);
+        console.error('Erro completo no componente:', erro);
+        let mensagem = 'Erro ao salvar dono';
+        if (erro?.error) {
+          if (typeof erro.error === 'string') {
+            mensagem = erro.error;
+          } else if (erro.error.message) {
+            mensagem = erro.error.message;
+          } else if (erro.error.title) {
+            mensagem = erro.error.title;
+          }
+        } else if (erro?.message) {
+          mensagem = erro.message;
+        }
+        alert(`Erro ao salvar dono: ${mensagem}\n\nVerifique o console para mais detalhes.`);
       }
     });
   }
