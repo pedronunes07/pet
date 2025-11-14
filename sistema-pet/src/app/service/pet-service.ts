@@ -3,13 +3,14 @@ import { Pet } from '../model/pet';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root', 
 })
 export class PetService {
   private http = inject(HttpClient);
-  private readonly API = "http://localhost:5281/api/pet";
+  private readonly API = `${environment.apiUrl}/pet`;
   private petsSignal = signal<Pet[]>([]);
 
   constructor() {

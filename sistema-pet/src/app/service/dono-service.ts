@@ -3,13 +3,14 @@ import { Dono } from '../model/dono';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root', 
 })
 export class DonoService {
   private http = inject(HttpClient);
-  private readonly API = "http://localhost:5281/api/dono";
+  private readonly API = `${environment.apiUrl}/dono`;
   private donosSignal = signal<Dono[]>([]);
 
   constructor() {

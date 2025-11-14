@@ -64,7 +64,8 @@
               "buildTarget": "sistema-pet:build:production"
             },
             "development": {
-              "buildTarget": "sistema-pet:build:development"
+              "buildTarget": "sistema-pet:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
