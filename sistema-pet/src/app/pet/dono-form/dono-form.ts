@@ -85,54 +85,57 @@ export class DonoForm implements OnInit {
 
   adicionar() {
     const donoData = this.dono();
-    const novoDono = new Dono(
-      donoData.nomeCompleto!,
-      donoData.email!,
-      donoData.telefone!,
-      donoData.cidade || '',
-      undefined,
-      donoData.endereco,
-      donoData.cep,
-      donoData.estado,
-      donoData.contatoEmergencia,
-      donoData.telefoneEmergencia,
-      donoData.observacao
-    );
+    // Cria um objeto simples sem o id para enviar ao backend
+    const novoDono: Omit<Dono, 'id'> = {
+      nomeCompleto: donoData.nomeCompleto!,
+      email: donoData.email!,
+      telefone: donoData.telefone!,
+      cidade: donoData.cidade || '',
+      endereco: donoData.endereco,
+      cep: donoData.cep,
+      estado: donoData.estado,
+      contatoEmergencia: donoData.contatoEmergencia,
+      telefoneEmergencia: donoData.telefoneEmergencia,
+      observacao: donoData.observacao
+    };
     this.donoService.adicionar(novoDono).subscribe({
       next: (resposta) => {
-        this.router.navigate(['/']);
         alert('Dono salvo com sucesso!');
+        this.router.navigate(['/']);
       },
       error: (erro) => {
-        console.error(erro);
-        alert('Erro ao salvar dono');
+        console.error('Erro completo:', erro);
+        const mensagem = erro?.error?.message || erro?.message || 'Erro ao salvar dono';
+        alert(`Erro ao salvar dono: ${mensagem}`);
       }
     });
   }
 
   atualizar() {
     const donoData = this.dono();
-    const donoAtualizado = new Dono(
-      donoData.nomeCompleto!,
-      donoData.email!,
-      donoData.telefone!,
-      donoData.cidade || '',
-      this.donoId,
-      donoData.endereco,
-      donoData.cep,
-      donoData.estado,
-      donoData.contatoEmergencia,
-      donoData.telefoneEmergencia,
-      donoData.observacao
-    );
+    // Cria um objeto simples com o id para atualizar
+    const donoAtualizado: Dono = {
+      id: this.donoId!,
+      nomeCompleto: donoData.nomeCompleto!,
+      email: donoData.email!,
+      telefone: donoData.telefone!,
+      cidade: donoData.cidade || '',
+      endereco: donoData.endereco,
+      cep: donoData.cep,
+      estado: donoData.estado,
+      contatoEmergencia: donoData.contatoEmergencia,
+      telefoneEmergencia: donoData.telefoneEmergencia,
+      observacao: donoData.observacao
+    };
     this.donoService.atualizar(donoAtualizado).subscribe({
       next: (resposta) => {
-        this.router.navigate(['/']);
         alert('Dono atualizado com sucesso!');
+        this.router.navigate(['/']);
       },
       error: (erro) => {
-        console.error(erro);
-        alert('Erro ao atualizar dono');
+        console.error('Erro completo:', erro);
+        const mensagem = erro?.error?.message || erro?.message || 'Erro ao atualizar dono';
+        alert(`Erro ao atualizar dono: ${mensagem}`);
       }
     });
   }

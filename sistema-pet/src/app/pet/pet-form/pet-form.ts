@@ -153,24 +153,54 @@ export class CadastrarPet implements OnInit {
 
   adicionarPet() {
     const petData = this.pet();
-    this.petService.adicionar(petData as Omit<Pet, 'id'>).subscribe({
+    // Remove campos undefined e cria objeto limpo para enviar
+    const novoPet: Omit<Pet, 'id'> = {
+      nome: petData.nome!,
+      especie: petData.especie!,
+      raca: petData.raca || '',
+      idade: petData.idade || 0,
+      donoId: petData.donoId,
+      peso: petData.peso,
+      cor: petData.cor,
+      sexo: petData.sexo,
+      vacinado: petData.vacinado,
+      vacinas: petData.vacinas?.filter(v => v.nomeVacina || v.dataAplicacao) || [],
+      observacoes: petData.observacoes,
+      observacoesMedicas: petData.observacoesMedicas,
+      fotos: petData.fotos
+    };
+    this.petService.adicionar(novoPet).subscribe({
       next: (resposta) => {
         alert('Pet cadastrado com sucesso!');
         this.router.navigate(['/']);
       },
       error: (erro) => {
-        console.error(erro);
-        alert('Erro ao salvar pet');
+        console.error('Erro completo:', erro);
+        const mensagem = erro?.error?.message || erro?.message || 'Erro ao salvar pet';
+        alert(`Erro ao salvar pet: ${mensagem}`);
       }
     });
   }
 
   atualizarPet() {
     const petData = this.pet();
+    // Cria objeto limpo com todos os campos necessários
     const petAtualizado: Pet = {
-      ...petData,
-      id: this.petId
-    } as Pet;
+      id: this.petId!,
+      nome: petData.nome!,
+      especie: petData.especie!,
+      raca: petData.raca || '',
+      idade: petData.idade || 0,
+      donoId: petData.donoId,
+      peso: petData.peso,
+      cor: petData.cor,
+      sexo: petData.sexo,
+      vacinado: petData.vacinado,
+      vacinas: petData.vacinas?.filter(v => v.nomeVacina || v.dataAplicacao) || [],
+      observacoes: petData.observacoes,
+      observacoesMedicas: petData.observacoesMedicas,
+      fotos: petData.fotos
+    };
     
     this.petService.atualizar(petAtualizado).subscribe({
       next: (resposta) => {
@@ -178,8 +208,9 @@ export class CadastrarPet implements OnInit {
         this.router.navigate(['/']);
       },
       error: (erro) => {
-        console.error(erro);
-        alert('Erro ao atualizar pet');
+        console.error('Erro completo:', erro);
+        const mensagem = erro?.error?.message || erro?.message || 'Erro ao atualizar pet';
+        alert(`Erro ao atualizar pet: ${mensagem}`);
       }
     });
   }
